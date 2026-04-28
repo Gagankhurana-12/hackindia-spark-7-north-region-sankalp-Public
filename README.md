@@ -13,7 +13,7 @@
 
 <br/>
 
-[**Deployed Link**](https://hackindia-spark-7-north-region-sank.vercel.app/) · [**Pitch Deck**](https://canva.link/fu3h310hf6r8t9l) · [**Demo Link**](https://hackindia-spark-7-north-region-sank.vercel.app/)
+[**Deployed Link**](https://hackindia-spark-7-north-region-sank.vercel.app/) · [**Pitch Deck**](https://canva.link/fu3h310hf6r8t9l) · [**Demo Link**](https://www.loom.com/share/afce61f421c34d3da1b6c3e3282ec9c6)
 
 </div>
 
@@ -282,6 +282,55 @@ flowchart LR
 **Coherence Guard:** Every fact is validated — *does this fact actually connect to what is on screen right now?* — before it reaches the child. If it fails, the system either finds a replacement or skips the intervention silently. A photosynthesis video never gets a friction fact.
 
 ---
+## See Spark in Action
+
+[Khoj Demo — Spark AI pausing a video in real time](https://www.loom.com/share/afce61f421c34d3da1b6c3e3282ec9c6)
+
+> *Spark pauses a solar system video at the exact right moment and delivers a wow fact in Hindi — age 9, interest: football.*
+
+## Screenshots
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 1 08 38 AM" src="https://github.com/user-attachments/assets/3812209b-55c3-4ee8-aaa5-bda3aded6623" />
+
+ <img width="3456" height="2234" alt="Screenshot 2026-04-29 at 1 12 23 AM" src="https://github.com/user-attachments/assets/46e24680-1201-4d92-ada1-515923266b6d" />
+
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 12 34 05 AM" src="https://github.com/user-attachments/assets/1a11e0c8-24ed-4093-b840-71ae516facca" />
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 1 13 12 AM" src="https://github.com/user-attachments/assets/b685d029-8a7f-4607-8313-49ed45c294bf" />
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 1 13 20 AM" src="https://github.com/user-attachments/assets/5e5c9358-a077-47bc-850f-6c8ab6459418" />
+
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 1 14 35 AM" src="https://github.com/user-attachments/assets/a2642d59-6a42-417d-b6df-fb4a637b843e" />
+
+
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 12 34 34 AM" src="https://github.com/user-attachments/assets/0e26a724-5885-461b-b491-b570217630f9" />
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 12 34 49 AM" src="https://github.com/user-attachments/assets/306d8d0f-3a90-4586-812a-2e4ee5d78eb1" />
+
+
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 12 35 08 AM" src="https://github.com/user-attachments/assets/b7e0b39b-1ef4-4edf-ba21-6c9383535854" />
+
+<img width="3456" height="1670" alt="Screenshot 2026-04-29 at 1 10 29 AM" src="https://github.com/user-attachments/assets/c7824b27-30c9-400a-9d0f-008f555adcc4" />
+
+
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 12 36 05 AM" src="https://github.com/user-attachments/assets/2dfe2000-e97f-44e5-b86a-633241378b34" />
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 12 36 11 AM" src="https://github.com/user-attachments/assets/140f05e7-a5fc-496f-994b-679762831e0f" />
+
+
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 12 37 46 AM" src="https://github.com/user-attachments/assets/68060089-4793-45f3-9e4d-630090f339cf" />
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 12 37 59 AM" src="https://github.com/user-attachments/assets/013e7e81-80d3-4c52-a1e3-b1e8fb631f09" />
+
+<img width="3456" height="2234" alt="Screenshot 2026-04-29 at 12 38 06 AM" src="https://github.com/user-attachments/assets/a455ce72-ef1d-42b8-a5cb-733321122b7a" />
+
+
 
 ## Tech Stack
 
