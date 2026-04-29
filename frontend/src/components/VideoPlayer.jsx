@@ -83,6 +83,23 @@ async function loadWowFactors({ videoId, ppuEndpoint, signal }) {
   return j;
 }
 
+async function requestMentorTts(text, { childToken, voice = 'alloy' } = {}) {
+  if (!childToken) return null;
+
+  const res = await fetch('/api/mentor/synthesize', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${childToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ text, voice })
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data?.audioBase64 || data?.provider === 'none') return null;
+  return data;
+}
+
 // -------------------------------------------------------- YouTube IFrame API singleton
 let ytApiPromise = null;
 function loadYouTubeApi() {
@@ -101,7 +118,7 @@ function loadYouTubeApi() {
 }
 
 // ----------------------------------------------------------------- TTS (Thread B output)
-async function speak(text, { onEnd, childToken, voice = 'alloy', band = 'functional' } = {}) {
+async function speak(text, { onEnd, childToken, voice = 'alloy', band = 'functional', preloadedAudio = null } = {}) {
   const tryBrowserTTS = (reason) => {
     console.log(`[voice] FALLBACK to browser TTS: ${reason}`);
     try {
@@ -133,32 +150,32 @@ async function speak(text, { onEnd, childToken, voice = 'alloy', band = 'functio
     }
   };
 
-  try {
-    if (!childToken) return tryBrowserTTS();
-
-    const res = await fetch('/api/mentor/synthesize', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${childToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ text, voice })
-    });
-
-    const data = await res.json();
-    if (!res.ok || !data.audioBase64 || data.provider === 'none') {
-      return tryBrowserTTS(data.error || 'Server rejected synthesis');
-    }
-
-    console.log(`[voice] PLAYING via ${data.provider} (${voice})`);
-    const audio = new Audio(`data:${data.mimeType};base64,${data.audioBase64}`);
+  const playEncodedAudio = (audioPayload) => {
+    const audio = new Audio(`data:${audioPayload.mimeType || 'audio/mpeg'};base64,${audioPayload.audioBase64}`);
     audio.onended = onEnd;
-    audio.play();
+    audio.play().catch(() => {
+      if (onEnd) onEnd();
+    });
 
     return () => {
       audio.pause();
       audio.src = '';
     };
+  };
+
+  if (preloadedAudio?.audioBase64) {
+    console.log('[voice] PLAYING prefetched TTS audio');
+    return playEncodedAudio(preloadedAudio);
+  }
+
+  try {
+    const data = await requestMentorTts(text, { childToken, voice });
+    if (!data) {
+      return tryBrowserTTS(data.error || 'Server rejected synthesis');
+    }
+
+    console.log(`[voice] PLAYING via ${data.provider} (${voice})`);
+    return playEncodedAudio(data);
   } catch (err) {
     return tryBrowserTTS();
   }
@@ -183,6 +200,8 @@ export default function VideoPlayer({
   const pollRef = useRef(null);
   const triggered = useRef(new Set());
   const cancelSpeakRef = useRef(() => { });
+  const ttsCacheRef = useRef(new Map());
+  const ttsInFlightRef = useRef(new Set());
 
   const [ready, setReady] = useState(false);
   const [wowFactors, setWowFactors] = useState(wowFactorsProp || []);
@@ -195,6 +214,34 @@ export default function VideoPlayer({
   const [ppuError, setPpuError] = useState(null);
   const [ppuBadges, setPpuBadges] = useState({ transcriptStatus: null, aiStatus: null });
   const [resumeTime, setResumeTime] = useState(0);
+
+  const voiceMap = { sensory: 'alloy', functional: 'alloy', specialist: 'alloy' };
+
+  const getSpeechText = useCallback((wow) => `${mentor.greeting} ${wow.fact}`, [mentor.greeting]);
+
+  const prefetchWowAudio = useCallback(async (wow) => {
+    const ts = wow?.timestamp;
+    if (!Number.isFinite(ts)) return;
+    if (ttsCacheRef.current.has(ts) || ttsInFlightRef.current.has(ts)) return;
+
+    const childToken = localStorage.getItem('childToken');
+    if (!childToken) return;
+
+    ttsInFlightRef.current.add(ts);
+    try {
+      const tts = await requestMentorTts(getSpeechText(wow), {
+        childToken,
+        voice: voiceMap[band] || 'alloy',
+      });
+      if (tts?.audioBase64) {
+        ttsCacheRef.current.set(ts, tts);
+      }
+    } catch {
+      // no-op; runtime speak path still has browser fallback
+    } finally {
+      ttsInFlightRef.current.delete(ts);
+    }
+  }, [band, getSpeechText]);
 
   // 1) Thread A — mount the IFrame stream
   useEffect(() => {
@@ -238,6 +285,16 @@ export default function VideoPlayer({
       .catch((e) => { setPpuStatus('error'); setPpuError(e?.message || 'PPU failed'); });
     return () => ctrl.abort();
   }, [videoId, ppuEndpoint, wowFactorsProp]);
+
+  // 2b) Prefetch first few Wow Factor audios in the background to reduce talk-start latency.
+  useEffect(() => {
+    if (!wowFactors.length) return;
+
+    const firstBatch = wowFactors.slice(0, 3);
+    firstBatch.forEach((wow) => {
+      prefetchWowAudio(wow);
+    });
+  }, [wowFactors, prefetchWowAudio]);
 
   // 3) Resume playback from the last saved timestamp
   useEffect(() => {
@@ -297,33 +354,36 @@ export default function VideoPlayer({
       setCurrentTime(t);
       if (d && d !== duration) setDuration(d);
       if (phase !== 'idle' || !wowFactors.length) return;
-      const due = wowFactors.find(
+      const dueIndex = wowFactors.findIndex(
         (w) => !triggered.current.has(w.timestamp) && t >= w.timestamp && t < w.timestamp + 1.5,
       );
+      const due = dueIndex >= 0 ? wowFactors[dueIndex] : null;
       if (due) {
         triggered.current.add(due.timestamp);
+        const nextWow = wowFactors[dueIndex + 1];
+        if (nextWow) prefetchWowAudio(nextWow);
         try { p.pauseVideo && p.pauseVideo(); } catch { }
         setActiveWow(due);
         setPhase('mentor');
       }
     }, 400);
     return () => clearInterval(pollRef.current);
-  }, [ready, phase, wowFactors]);
+  }, [ready, phase, wowFactors, prefetchWowAudio]);
 
   // 4) When the Mentor appears, deliver the fact via TTS
   useEffect(() => {
     if (phase !== 'mentor' || !activeWow) return;
     setSpeaking(true);
-    
-    // Voices mapping: Alloy is the warmest, most 'parent-like' voice.
-    const voiceMap = { sensory: 'alloy', functional: 'alloy', specialist: 'alloy' };
+
     const childToken = localStorage.getItem('childToken');
+    const prefetched = ttsCacheRef.current.get(activeWow.timestamp) || null;
 
     const run = async () => {
-      const cancel = await speak(`${mentor.greeting} ${activeWow.fact}`, {
+      const cancel = await speak(getSpeechText(activeWow), {
         childToken,
         voice: voiceMap[band] || 'alloy',
         band,
+        preloadedAudio: prefetched,
         onEnd: () => setSpeaking(false),
       });
       cancelSpeakRef.current = cancel;
@@ -331,7 +391,7 @@ export default function VideoPlayer({
 
     run();
     return () => cancelSpeakRef.current();
-  }, [phase, activeWow, band, mentor.greeting]);
+  }, [phase, activeWow, band, getSpeechText]);
 
   const handleSkip = useCallback(() => {
     cancelSpeakRef.current();
