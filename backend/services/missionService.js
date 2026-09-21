@@ -2,10 +2,10 @@ const DailyMission = require('../models/DailyMission');
 const Child = require('../models/Child');
 const WatchHistory = require('../models/WatchHistory');
 
-const DEFAULT_GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
+const DEFAULT_GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
 const GROQ_MODEL_FALLBACKS = [
     DEFAULT_GROQ_MODEL,
-    'llama-3.3-70b-versatile',
+    'openai/gpt-oss-120b',
 ];
 
 function getAgeMode(age) {

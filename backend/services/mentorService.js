@@ -10,7 +10,7 @@ const VIDEO_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
 const MAX_HISTORY_MESSAGES = 3;
 const MAX_MEMORY_TOPICS = 4;
 const DEFAULT_LANG = 'en';
-const DEFAULT_GROQ_MODEL = process.env.MENTOR_GROQ_MODEL || process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
+const DEFAULT_GROQ_MODEL = process.env.MENTOR_GROQ_MODEL || process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
 const TOPIC_ALIGNMENT_MIN_SCORE = 0.12;
 
 const TOPIC_STOPWORDS = new Set([

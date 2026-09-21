@@ -5,7 +5,7 @@ const VideoContextCache = require('../models/VideoContextCache');
 const { classifyByKeywords } = require('./feedTopicMap');
 const { hydrateWatchHistory, ytThumbFromId } = require('./youtubeMetadata');
 
-const DEFAULT_GROQ_MODEL = process.env.MENTOR_GROQ_MODEL || process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
+const DEFAULT_GROQ_MODEL = process.env.MENTOR_GROQ_MODEL || process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
 const YOUTUBE_RE = /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i;
 const ADD_INTEREST_RE = /(?:add|include|append)(?:\s+(?:an?|the))?\s+(?:interest|topic|subject)?\s*(?:in|of|:|to (?:his|her|their|the) (?:interests?|list))?\s*([a-z0-9 \-]{2,40})/i;
 const REMOVE_INTEREST_RE = /(?:remove|delete|drop)(?:\s+(?:the))?\s+(?:interest|topic|subject)?\s*[:\-]?\s*([a-z0-9 \-]{2,40})/i;
